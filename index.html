@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Automation Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-box.has-image {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .upload-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .verify-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+
+        .verify-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .verify-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            display: none;
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .result-status {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .result-status.verified {
+            background: #10b981;
+            color: white;
+        }
+
+        .result-status.failed {
+            background: #ef4444;
+            color: white;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .similarity-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .similarity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 KYC Automation Platform</h1>
+            <p>AI-Powered Identity Verification for Small Businesses</p>
+        </div>
+
+        <div class="main-card">
+            <div class="upload-section">
+                <div class="upload-box" id="idBox" onclick="document.getElementById('idInput').click()">
+                    <h3>📄 ID Document Photo</h3>
+                    <p>Upload a clear photo of the ID card</p>
+                    <button class="upload-btn" type="button">Choose File</button>
+                    <input type="file" id="idInput" accept="image/*" onchange="handleImageUpload(event, 'id')">
+                    <img id="idPreview" class="preview-image" style="display:none;">
+                </div>
+
+                <div class="upload-box" id="selfieBox" onclick="document.getElementById('selfieInput').click()">
+                    <h3>🤳 Live Selfie</h3>
+                    <p>Upload a selfie for face matching</p>
+                    <button class="upload-btn" type="button">Choose File</button>
+                    <input type="file" id="selfieInput" accept="image/*" onchange="handleImageUpload(event, 'selfie')">
+                    <img id="selfiePreview" class="preview-image" style="display:none;">
+                </div>
+            </div>
+
+            <button class="verify-btn" id="verifyBtn" onclick="verifyFaces()" disabled>
+                Verify Identity
+            </button>
+
+            <div class="loading" id="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Analyzing faces... Please wait</p>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-header">
+                    <div class="result-status" id="resultStatus">✓ Verified</div>
+                    <h2 id="resultTitle">Identity Verification Result</h2>
+                </div>
+
+                <div class="result-details">
+                    <div class="detail-card">
+                        <div class="detail-label">Similarity Score</div>
+                        <div class="detail-value" id="similarityScore">--</div>
+                        <div class="similarity-bar">
+                            <div class="similarity-fill" id="similarityBar" style="width:0%">
+                                <span id="similarityPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value" id="distanceValue">--</div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-label">Verification Method</div>
+                        <div class="detail-value" id="methodValue" style="font-size:1em;">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let idImage = null;
+        let selfieImage = null;
+
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                
+                if (type === 'id') {
+                    idImage = base64;
+                    document.getElementById('idPreview').src = base64;
+                    document.getElementById('idPreview').style.display = 'block';
+                    document.getElementById('idBox').classList.add('has-image');
+                } else {
+                    selfieImage = base64;
+                    document.getElementById('selfiePreview').src = base64;
+                    document.getElementById('selfiePreview').style.display = 'block';
+                    document.getElementById('selfieBox').classList.add('has-image');
+                }
+
+                checkReadyToVerify();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function checkReadyToVerify() {
+            const btn = document.getElementById('verifyBtn');
+            btn.disabled = !(idImage && selfieImage);
+        }
+
+        async function verifyFaces() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('verifyBtn').disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/verify-face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        idPhoto: idImage,
+                        selfie: selfieImage
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayResult(result);
+                } else {
+                    alert('Error: ' + (result.error || 'Verification failed'));
+                }
+            } catch (error) {
+                alert('Error connecting to server. Make sure the Python backend is running!');
+                console.error(error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('verifyBtn').disabled = false;
+            }
+        }
+
+        function displayResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const statusEl = document.getElementById('resultStatus');
+            const titleEl = document.getElementById('resultTitle');
+
+            if (result.verified) {
+                statusEl.textContent = '✓ Verified';
+                statusEl.className = 'result-status verified';
+                titleEl.textContent = 'Identity Verified Successfully!';
+            } else {
+                statusEl.textContent = '✗ Not Verified';
+                statusEl.className = 'result-status failed';
+                titleEl.textContent = 'Identity Verification Failed';
+            }
+
+            document.getElementById('similarityScore').textContent = result.similarity + '%';
+            document.getElementById('distanceValue').textContent = result.distance || 'N/A';
+            document.getElementById('methodValue').textContent = result.method || 'Unknown';
+
+            const bar = document.getElementById('similarityBar');
+            const percent = document.getElementById('similarityPercent');
+            setTimeout(() => {
+                bar.style.width = result.similarity + '%';
+                percent.textContent = result.similarity + '%';
+            }, 100);
+
+            resultSection.classList.add('show');
+        }
+
+        // Check if backend is running on page load
+        window.onload = async function() {
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                console.log('Backend status:', data);
+            } catch (error) {
+                console.warn('Backend not running yet');
+            }
+        };
+    </script>
+</body>
+</html>
