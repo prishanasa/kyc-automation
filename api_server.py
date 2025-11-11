@@ -38,7 +38,6 @@ def decode_image(base64_string):
     except Exception as e:
         return None
 
-
 def verify_faces(id_image, selfie_image):
     """Main verification function"""
     if USE_DEEPFACE:
