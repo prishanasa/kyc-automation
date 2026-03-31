@@ -6,7 +6,7 @@ import base64
 import numpy as np
 import cv2
 
-pp = Flask(__name__)
+app = Flask(__name__)
 CORS(app)
 
 # We'll use DeepFace for face verification
